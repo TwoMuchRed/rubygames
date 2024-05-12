@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <title>frogie's arcade</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-118283086-6"></script>
+    <script src="js/googleAnalytics.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="js/IronSourceRV.js"></script>
+    <script src="js/mobileRedirect.js"></script>
+    <script src="js/fullscreen.js"></script>
+    <script src="hacks.js"></script>
+    <script src="hacks2.js"></script>
+    <script>
+        var gameLoaded = false;
+        window.addEventListener("beforeunload", function (e) {
+            if (adsVisible || !gameLoaded || !lockedOccured)
+                return null;
+            var confirmationMessage = 'Are you sure you want to leave? ';
+            (e || window.event).returnValue = confirmationMessage; //Gecko + IE
+            return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
+        });
+        window.alert = function(e) {console.log(e)};
+    </script>
+    <link rel='shortcut icon' type="image/png" href="favicon.png?v2" />
+
+    <link rel="canonical" href="https://1v1.lol/" />
+    <meta property="og:title" content="1v1.LOL" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://1v1.lol/" />
+    <meta property="og:image" content="https://1v1.lol/splash.jpg" />
+    <meta property="og:description" content="Discover 1v1, the online building simulator & third person shooting game. Battle royale, build fight, box fight, zone wars and more game modes to enjoy!">
+
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description"
+          content="Discover 1v1, the online building simulator & third person shooting game. Battle royale, build fight, box fight, zone wars and more game modes to enjoy!">
+    <meta name="keywords" content="just,build,simulator,practice,free,online,battle,royale">
+    <script type="text/javascript" src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+
+
+    
+</head>
+<body>
+
+<!-- <div id="interAdsContainer" style="display: none;"></div> -->
+<div id="gameContainer">
+    <canvas id="canvas"></canvas>
+    <div id="loader">
+        <img class="logo" src="loading.gif">
+        <div class="spinner"></div>
+        <div class="progress">
+            <div class="full"></div>
+        </div>
+        <div id="percentDiv" style="color: white; left: 32%;"></div>
+    </div>
+</div>
+
+<script>
+    var buildUrl = "Build"; //%buildUrl
+    var loaderUrl = buildUrl + "/WebGL.loader.js";
+
+    var config = {
+        dataUrl: buildUrl + "/WebGL.data.unityweb",
+        frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb",
+        codeUrl: buildUrl + "/WebGL.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "JustPlay.LOL",
+        productName: "1v1.LOL Dev",
+        productVersion: "4.0"
+    };
+
+    var container = document.querySelector("#gameContainer");
+    var canvas = document.querySelector("#canvas");
+    var loadingBar = document.querySelector("#loader");
+    var spinner = loadingBar.querySelector(".spinner")
+    var progressBarFull = loadingBar.querySelector(".progress");
+    var fullscreenButton = progressBarFull.querySelector(".full");
+    var mobileWarning = document.querySelector("#unity-mobile-warning");
+
+    // By default Unity keeps WebGL canvas render target size matched with
+    // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+    // Set this to false if you want to decouple this synchronization from
+    // happening inside the engine, and you would instead like to size up
+    // the canvas DOM size and WebGL render target sizes yourself.
+    // config.matchWebGLToCanvasSize = false;
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        container.className = "unity-mobile";
+        // Avoid draining fillrate performance on mobile devices,
+        // and default/override low DPI mode on mobile browsers.
+        config.devicePixelRatio = 1;
+        mobileWarning.style.display = "block";
+        setTimeout(() => {
+            mobileWarning.style.display = "none";
+        }, 5000);
+    }
+
+    let gameInstance;
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+            spinner.style.display = "none"
+            document.getElementById("percentDiv").innerHTML = (100 * progress + 10).toFixed(0) + "%";
+            progressBarFull.style.width = 100 * progress + "%";
+        }).then((unityInstance) => {
+            loadingBar.style.display = "none";
+            window.unityInstance = unityInstance;
+            gameInstance = unityInstance;
+            window.gameInstance = unityInstance;
+        }).catch((message) => {
+            alert(message);
+        });
+    };
+    document.body.appendChild(script);
+
+    document.onkeydown = function (e) {
+        if (e.altKey || e.ctrlKey || e.key == "F1" || e.key == "F2" || e.key == "F3" || e.key == "F4") {
+            e.preventDefault();
+        }
+    }
+
+    document.onmouseup = function (e) {
+        e.preventDefault();
+    }
+
+    document.addEventListener('pointerlockchange', lockChangeAlert, false);
+    document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
+
+    function lockChangeAlert() {
+        if (!lockedOccured && document.pointerLockElement)
+            lockedOccured = true;
+        if (!document.pointerLockElement && lockedOccured){
+            lockedOccured = false;
+            window.unityInstance.SendMessage("Pause Menu", "OnCursorUnlocked");
+        }
+    }
+
+
+</script>
+
+<!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.2.1/firebase-app.js"></script>
+
+<!-- Add Firebase products that you want to use -->
+<script src="https://www.gstatic.com/firebasejs/7.2.1/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.2.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.2.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.2.1/firebase-remote-config.js"></script>
+
+<script src="js/firebase.js?v=147"></script>
+<script src="js/login.js?v=147"></script>
+<script src="js/firebase-config.js?v=147"></script>
+
+<script>
+    var hostname = window.location.hostname;
+    if(hostname.indexOf("dev1v1") >= 0 || hostname.indexOf("dev.1v1") >= 0 || hostname.indexOf("test1v1") >= 0 || hostname.indexOf("test.1v1") >= 0 || hostname.indexOf("localhost") >= 0) {
+        initializeFireBaseDev();
+    } else{
+        initializeFireBase();
+    }
+
+    initRemoteConfig();
+</script>
+
+<script src="js/windowResize.js"></script>
+<script src="js/adblockManager.js"></script>
+<script src="js/macUserAgent.js"></script>
+<script src="js/visibilityChangeListener.js"></script>
+<script>
+    function onUnityReady() {
+        checkAdBlock();
+        sendConfig();
+    }
+
+    fixMacUserAgent();
+</script>
+<!--<script src="js/IronSourceInter.js"></script>-->
+</script>
+</body>
+</html>
