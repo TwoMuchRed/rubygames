@@ -1,4 +1,4 @@
-#  <img src="/media/icons/ruby.png" alt="Ruby Arcade Logo" width="50"> Ruby Arcade games
+#  <img src="media/icons/ruby.png" alt="Ruby Arcade Logo" width="50"> Ruby Arcade games
 
 Ruby arcade is a game network that features a wide variety of engaging and immersive games suitable for all ages.
 
