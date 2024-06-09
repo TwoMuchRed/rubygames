@@ -1,6 +1,11 @@
 **/node_modules/
 *.db
-roms/
-yarn.lock
+data/minify/package-lock.json
 package-lock.json
-.vscode/settings.json
+yarn.lock
+roms/
+data/emulator.min.js
+data/emulator.min.css
+data/cores
+.DS_Store
+.vscode/*

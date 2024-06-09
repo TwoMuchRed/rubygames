@@ -1,6 +1,79 @@
 # Changes
 
-# 4.0.6
+# 4.0.12
+- Fix scroll bar css (Thanks to [@allancoding](https://github.com/allancoding))
+- Flip the context menu instead of going off the page
+- Add hooks for save files (Thanks to [@gantoine](https://github.com/gantoine))
+- Add class for each virtual gamepad button
+- Add `EJS_forceLegacyCores` option
+- Add `EJS_noAutoFocus` (this is only for advanced developers, not likely an option you will use)
+- Added supported Amiga file extensions (Thanks to [@michael-j-green](https://github.com/michael-j-green))
+- Display the file name of the ROM/disk when using M3U lists (Thanks to [@michael-j-green](https://github.com/michael-j-green))
+- Added vsync option
+- Added advanced shader configuration support (Thanks to [@n-at](https://github.com/n-at))
+
+# 4.0.11 [View Tree](https://github.com/EmulatorJS/EmulatorJS/tree/cafd80d023afa9562c7054e89a4240f3381d64ff)
+- Added the ability to disable localstorage using `EJS_disableLocalStorage`. (Thanks to [@n-at](https://github.com/n-at))
+- Added the ability to trigger `EJS_emulator.displayMessage` with a duration. (Thanks to [@allancoding](https://github.com/allancoding))
+- `EJS_emulator.gameManager.getState` now returns a Uint8Array instead of a promise.
+- Fixed broken save states from the 4.0.10 release.
+
+# 4.0.10 [View Tree](https://github.com/EmulatorJS/EmulatorJS/tree/390605d2ab48db16c07c8fb4fc2815033af5c3a6)
+- Fixed bug with duplicate control inputs.
+- Fixed mobile settings menu positioning.
+- Ability to load custom files into the wasm instance.
+- Renamed the `mame2003` system to `mame`.
+- Removed mame disclaimers on `mame2003` core.
+- Added VICE cores for C64, C128, VIC20, Plus/4, and PET (Thanks to [@michael-j-green](https://github.com/michael-j-green))
+- Added a padding between popup body and buttons.
+- Added ability to disabled cached databases.
+- Fixed screenshot for some cores.
+- Fixed game element not being focused after fullscreening.
+- Added missing Famicom controls.
+- Fixed volume slider shadow. (Thanks to [@allancoding](https://github.com/allancoding))
+
+# 4.0.9 [View Tree](https://github.com/EmulatorJS/EmulatorJS/tree/ddb5c6092f12a63a46d74ea67e6469726665ebc2)
+- Repository history rewrite - expect faster cloning times.
+- Prevent Vice64 from creating cue files (Thanks to [@michael-j-green](https://github.com/michael-j-green))
+- Chinese translation updated (Thanks to [@oyepriyansh](https://github.com/oyepriyansh))
+- Added button to open context menu (Thanks to [@andrigamerita](https://github.com/andrigamerita))
+- Fixed menu bar text placement for items on the right.
+- Fixed a bug in safari where fullscreen would not resize the game element.
+- Fixed a bug in safari where the bottom menu would be visible on initial page load.
+- Fixed game rom filename showing as "game" when the game name is set.
+- Added legacy nintendo 64 cores for browsers that don't support webgl2.
+
+# 4.0.8 [View Tree](https://github.com/EmulatorJS/EmulatorJS/tree/f579eb4c080f612723fd6a119b02173cafb37503)
+- Fixed typo in virtual gamepad dpad.
+- Added updated desmume core.
+- Fixed key mapping (Thanks to [@allancoding](https://github.com/allancoding))
+- Fixed adblock message (Thanks to [@allancoding](https://github.com/allancoding))
+- Added `EJS_startButtonName` option.
+- Re-Added ability to drag and drop save states.
+- Fixed cheats menu.
+- Added popup message for Safari mobile users if game is not running.
+- Added `EJS_softLoad` option.
+- Added amiga core.
+- Added c64 core.
+
+# 4.0.7 [View Tree](https://github.com/EmulatorJS/EmulatorJS/tree/f579eb4c080f612723fd6a119b02173cafb37503)
+- Added rewind (Thanks to [@n-at](https://github.com/n-at))
+- Added slowdown (Thanks to [@n-at](https://github.com/n-at))
+- Fixed "zone" object in front of settings menu.
+- Fixed virtual gamepad alignment.
+- Add `EJS_fullscreenOnLoaded` option.
+- Add virtual gamepad toggle to the control menu (for touchscreen devices)
+- Fix gamepad ID showing as "undefined".
+- Added threaded cores.
+- Added joystick translations (Thanks to [@allancoding](https://github.com/allancoding))
+- Fixed fullscreen button tooltip (Thanks to [@allancoding](https://github.com/allancoding))
+- Added TurboGrafx-16, SuperGrafx, PC Engine, neo geo pocket, WonderSwan, PC-FX, and ColecoVision support. (Thanks to [@n-at](https://github.com/n-at))
+- Fixed cue file loading (Thanks to [@n-at](https://github.com/n-at))
+- Fixed ability to hide volume slider (Thanks to [@n-at](https://github.com/n-at))
+- Added new mame2003_plus core (now default mame2003 core)
+- Use keycodes instead of labels (Thanks to [@allancoding](https://github.com/allancoding))
+
+# 4.0.6 [View Tree](https://github.com/EmulatorJS/EmulatorJS/tree/5e338e7a888480cea331f6d4656bc8986a7d6b28)
 - Fixed n64 on iOS safari
 - virtual gamepads for atari2600, atari7800, lynx, jaguar, vb, 3do (Thanks to [@n-at](https://github.com/n-at))
 - control buttons for gba, vb, 3do, atari2600, atari7800, lynx, jaguar (Thanks to [@n-at](https://github.com/n-at))

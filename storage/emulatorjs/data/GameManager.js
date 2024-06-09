@@ -5,14 +5,13 @@ class EJS_GameManager {
         this.FS = this.Module.FS;
         this.functions = {
             restart: this.Module.cwrap('system_restart', '', []),
-            getStateInfo: this.Module.cwrap('get_state_info', 'string', []), //these names are dumb
             saveStateInfo: this.Module.cwrap('save_state_info', 'null', []),
             loadState: this.Module.cwrap('load_state', 'number', ['string', 'number']),
             screenshot: this.Module.cwrap('cmd_take_screenshot', '', []),
             simulateInput: this.Module.cwrap('simulate_input', 'null', ['number', 'number', 'number']),
             toggleMainLoop: this.Module.cwrap('toggleMainLoop', 'null', ['number']),
             getCoreOptions: this.Module.cwrap('get_core_options', 'string', []),
-            setVariable: this.Module.cwrap('set_variable', 'null', ['string', 'string']),
+            setVariable: this.Module.cwrap('ejs_set_variable', 'null', ['string', 'string']),
             setCheat: this.Module.cwrap('set_cheat', 'null', ['number', 'number', 'string']),
             resetCheat: this.Module.cwrap('reset_cheat', 'null', []),
             toggleShader: this.Module.cwrap('shader_enable', 'null', ['number']),
@@ -23,26 +22,22 @@ class EJS_GameManager {
             saveSaveFiles: this.Module.cwrap('cmd_savefiles', '', []),
             supportsStates: this.Module.cwrap('supports_states', 'number', []),
             loadSaveFiles: this.Module.cwrap('refresh_save_files', 'null', []),
-            setVolume: this.Module.cwrap('set_volume', 'null', ['number']),
             toggleFastForward: this.Module.cwrap('toggle_fastforward', 'null', ['number']),
             setFastForwardRatio: this.Module.cwrap('set_ff_ratio', 'null', ['number']),
             toggleRewind: this.Module.cwrap('toggle_rewind', 'null', ['number']),
             setRewindGranularity: this.Module.cwrap('set_rewind_granularity', 'null', ['number']),
             toggleSlowMotion: this.Module.cwrap('toggle_slow_motion', 'null', ['number']),
-            setSlowMotionRatio: this.Module.cwrap('set_sm_ratio', 'null', ['number'])
+            setSlowMotionRatio: this.Module.cwrap('set_sm_ratio', 'null', ['number']),
+            getFrameNum: this.Module.cwrap('get_current_frame_count', 'number', ['']),
+            setVSync: this.Module.cwrap('set_vsync', 'null', ['number'])
         }
-        this.mkdir("/home");
-        this.mkdir("/home/web_user");
-        this.mkdir("/home/web_user/retroarch");
-        this.mkdir("/home/web_user/retroarch/userdata");
-        this.mkdir("/home/web_user/retroarch/userdata/config");
-        this.mkdir("/home/web_user/retroarch/userdata/config/Beetle PSX HW");
-        this.FS.writeFile("/home/web_user/retroarch/userdata/config/Beetle PSX HW/Beetle PSX HW.opt", 'beetle_psx_hw_renderer = "software"\n');
+        this.writeFile("/home/web_user/retroarch/userdata/config/Beetle PSX HW/Beetle PSX HW.opt", 'beetle_psx_hw_renderer = "software"\n');
+        this.writeFile("/home/web_user/retroarch/userdata/config/MAME 2003 (0.78)/MAME 2003 (0.78).opt", 'mame2003_skip_disclaimer = "enabled"\nmame2003_skip_warnings = "enabled"\n');
         
         this.mkdir("/data");
         this.mkdir("/data/saves");
         
-        this.FS.writeFile("/home/web_user/retroarch/userdata/retroarch.cfg", this.getRetroArchCfg());
+        this.writeFile("/home/web_user/retroarch/userdata/retroarch.cfg", this.getRetroArchCfg());
         
         this.FS.mount(IDBFS, {}, '/data/saves');
         this.FS.syncfs(true, () => {});
@@ -53,6 +48,54 @@ class EJS_GameManager {
             this.saveSaveFiles();
             this.FS.syncfs(() => {});
         })
+    }
+    loadExternalFiles() {
+        return new Promise(async (resolve, reject) => {
+            if (this.EJS.config.externalFiles && this.EJS.config.externalFiles.constructor.name === 'Object') {
+                for (const key in this.EJS.config.externalFiles) {
+                    await new Promise(done => {
+                        this.EJS.downloadFile(this.EJS.config.externalFiles[key], async (res) => {
+                            if (res === -1) {
+                                if (this.EJS.debug) console.warn("Failed to fetch file from '" + this.EJS.config.externalFiles[key] + "'. Make sure the file exists.");
+                                return done();
+                            }
+                            let path = key;
+                            if (key.trim().endsWith("/")) {
+                                const invalidCharacters = /[#<$+%>!`&*'|{}/\\?"=@:^\r\n]/ig;
+                                let name = this.EJS.config.externalFiles[key].split("/").pop().split("#")[0].split("?")[0].replace(invalidCharacters, "").trim();
+                                if (!name) return done();
+                                const files = await this.EJS.checkCompression(new Uint8Array(res.data), this.EJS.localization("Decompress Game Assets"));
+                                if (files["!!notCompressedData"]) {
+                                    path += name;
+                                } else {
+                                    for (const k in files) {
+                                        this.writeFile(path+k, files[k]);
+                                    }
+                                    return done();
+                                }
+                            }
+                            try {
+                                this.writeFile(path, res.data);
+                            } catch(e) {
+                                if (this.EJS.debug) console.warn("Failed to write file to '" + path + "'. Make sure there are no conflicting files.");
+                            }
+                            done();
+                        }, null, true, {responseType: "arraybuffer", method: "GET"});
+                    })
+                }
+            }
+            resolve();
+        });
+    }
+    writeFile(path, data) {
+        const parts = path.split("/");
+        let current = "/";
+        for (let i=0; i<parts.length-1; i++) {
+            if (!parts[i].trim()) continue;
+            current += parts[i] + "/";
+            this.mkdir(current);
+        }
+        this.FS.writeFile(path, data);
     }
     mkdir(path) {
         try {
@@ -75,46 +118,35 @@ class EJS_GameManager {
                "savefile_directory = \"/data/saves\"\n";
     }
     initShaders() {
-        if (!window.EJS_SHADERS) return;
+        if (!this.EJS.config.shaders) return;
         this.mkdir("/shader");
-        for (const shader in window.EJS_SHADERS) {
-            this.FS.writeFile('/shader/'+shader, window.EJS_SHADERS[shader]);
+        for (const shaderFileName in this.EJS.config.shaders) {
+            const shader = this.EJS.config.shaders[shaderFileName];
+            if (typeof shader === 'string') {
+                this.FS.writeFile(`/shader/${shaderFileName}`, shader);
+            }
+        }
+    }
+    clearEJSResetTimer() {
+        if (this.EJS.resetTimeout) {
+            clearTimeout(this.EJS.resetTimeout);
+            delete this.EJS.resetTimeout;
         }
     }
     restart() {
+        this.clearEJSResetTimer();
         this.functions.restart();
     }
     getState() {
-        return new Promise(async (resolve, reject) => {
-            const stateInfo = (await this.getStateInfo()).split('|')
-            let state;
-            let size = stateInfo[0] >> 0;
-            if (size > 0) {
-                state = new Uint8Array(size);
-                let start = stateInfo[1] >> 0;
-                for (let i=0; i<size; i++) state[i] = this.Module.getValue(start + i);
-            }
-            resolve(state);
-        })
-    }
-    getStateInfo() {
         this.functions.saveStateInfo();
-        return new Promise((resolve, reject) => {
-            let a;
-            let b = setInterval(() => {
-                a = this.functions.getStateInfo();
-                if (a) {
-                    clearInterval(b);
-                    resolve(a);
-                }
-            }, 50)
-        });
+        return this.FS.readFile("/current.state");
     }
     loadState(state) {
         try {
             this.FS.unlink('game.state');
         } catch(e){}
         this.FS.writeFile('/game.state', state);
+        this.clearEJSResetTimer();
         this.functions.loadState("game.state", 0);
         setTimeout(() => {
             try {
@@ -124,7 +156,16 @@ class EJS_GameManager {
     }
     screenshot() {
         this.functions.screenshot();
-        return this.FS.readFile('screenshot.png');
+        return new Promise(async resolve => {
+            while (1) {
+                try {
+                    FS.stat("/screenshot.png");
+                    return resolve(this.FS.readFile("/screenshot.png"));
+                } catch(e) {}
+                
+                await new Promise(res => setTimeout(res, 50));
+            }
+        })
     }
     quickSave(slot) {
         if (!slot) slot = 1;
@@ -141,6 +182,7 @@ class EJS_GameManager {
         if (!slot) slot = 1;
         (async () => {
             let name = slot + '-quick.state';
+            this.clearEJSResetTimer();
             this.functions.loadState(name, 0);
         })();
     }
@@ -267,6 +309,9 @@ class EJS_GameManager {
             }, null, false, {responseType: "arraybuffer", method: "GET"});
         })
     }
+    setVSync(enabled) {
+        this.functions.setVSync(enabled);
+    }
     toggleMainLoop(playing) {
         this.functions.toggleMainLoop(playing);
     }
@@ -310,6 +355,7 @@ class EJS_GameManager {
         return (exists ? FS.readFile(this.getSaveFilePath()) : null);
     }
     loadSaveFiles() {
+        this.clearEJSResetTimer();
         this.functions.loadSaveFiles();
     }
     setFastForwardRatio(ratio) {
@@ -326,6 +372,9 @@ class EJS_GameManager {
     }
     setRewindGranularity(value) {
         this.functions.setRewindGranularity(value);
+    }
+    getFrameNum() {
+        return this.functions.getFrameNum();
     }
 }
 
