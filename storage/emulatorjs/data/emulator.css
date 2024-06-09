@@ -1,5 +1,5 @@
 .ejs_parent {
-    background: #000;
+    background: #EA4747;
     overflow: hidden;
     position: relative;
     font-family: Avenir, "Avenir Next", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
@@ -555,7 +555,7 @@
 
 .ejs_control_body input[type='text'] {
     background-color: #fff;
-    border: 1px solid #000;
+    border: 1px solid #EA4747;
     font-size: 12px;
     font-weight: 700;
     color: #000 !important;

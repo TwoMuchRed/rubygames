@@ -42,10 +42,10 @@
     --background-image: url('../../images/backgrounds/seraph/updatelogbg.png');
     --font-family: 'Ubuntu', sans-serif;
     --text-color: #fff;
-    --background-color: black;
+    --background-color: #EA4747;
     --border-color1: #ffffff;
     --border-color2: #c1bcbc;
-    --hover-color: #1a1818;
+    --hover-color: #EA4747;
     --text-glow: #000000
 }
 

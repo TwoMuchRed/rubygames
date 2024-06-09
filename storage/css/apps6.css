@@ -43,10 +43,10 @@
     --background-image: url('../../images/backgrounds/seraph/appsbg.png');
     --font-family: 'Ubuntu', sans-serif;
     --text-color: #fff;
-    --background-color: black;
+    --background-color: #EA4747;
     --border-color1: #aaaaaa;
     --border-color2: #ffffff;
-    --hover-color: #1a1818;
+    --hover-color: #EA4747;
     --text-glow: #000000
 }
 
